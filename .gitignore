@@ -1,0 +1,24 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Node (just in case)
+node_modules/
+npm-debug.log*
+
+# Build artifacts
+dist/
+build/
+
+# Claude Code local settings
+settings.local.json
+
+# Local-only test scripts (keep test-node.js because it's the regression runner)
+test-debug*.js
+test-hz.js
+test-case.js
+test-verify.js
+test-fortune*.js

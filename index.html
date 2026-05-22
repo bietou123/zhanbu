@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>詹卜 · 八字命理</title>
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>詹卜</h1>
+    <span class="subtitle">高精度八字排盘 · 真太阳时 · 节气精确到秒 · 流年推演 · 命理分析</span>
+  </header>
+
+  <main class="layout">
+    <aside class="panel-input">
+      <h2>命主信息</h2>
+      <form id="birthForm">
+        <label>姓名 <input type="text" name="name" placeholder="可选" /></label>
+
+        <fieldset>
+          <legend>出生日期（公历）</legend>
+          <div class="row">
+            <input type="number" name="year"  min="1900" max="2100" value="2002" />
+            <input type="number" name="month" min="1"    max="12"   value="9" />
+            <input type="number" name="day"   min="1"    max="31"   value="2" />
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>出生时间（北京时间 / 当地标准时）</legend>
+          <div class="row">
+            <input type="number" name="hour"   min="0" max="23" value="17" />
+            <input type="number" name="minute" min="0" max="59" value="5" />
+            <input type="number" name="second" min="0" max="59" value="0" />
+          </div>
+          <label class="check">
+            <input type="checkbox" name="useBeijingTime" checked />
+            按北京时间（UTC+8）输入；取消则按下方时区
+          </label>
+          <label>时区偏移（小时） <input type="number" name="tzOffset" step="0.5" value="8" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>出生地经纬度（用于真太阳时）</legend>
+          <div class="row">
+            <input type="number" name="lng" step="0.0001" value="120.1551" placeholder="经度" />
+            <input type="number" name="lat" step="0.0001" value="30.2741" placeholder="纬度" />
+          </div>
+          <select id="cityPreset">
+            <option value="">— 常用城市预设 —</option>
+
+            <optgroup label="直辖市">
+              <option value="116.4074,39.9042,8">北京</option>
+              <option value="121.4737,31.2304,8">上海</option>
+              <option value="117.2008,39.0842,8">天津</option>
+              <option value="106.5516,29.5630,8">重庆</option>
+            </optgroup>
+
+            <optgroup label="特别行政区 / 港澳台">
+              <option value="114.1694,22.3193,8">香港</option>
+              <option value="113.5491,22.1987,8">澳门</option>
+              <option value="121.5654,25.0330,8">台北</option>
+              <option value="120.3014,22.6273,8">高雄</option>
+            </optgroup>
+
+            <optgroup label="华北">
+              <option value="114.5149,38.0428,8">石家庄</option>
+              <option value="112.5489,37.8706,8">太原</option>
+              <option value="111.7519,40.8418,8">呼和浩特</option>
+              <option value="118.1755,39.6307,8">唐山</option>
+            </optgroup>
+
+            <optgroup label="东北">
+              <option value="123.4315,41.8057,8">沈阳</option>
+              <option value="125.3245,43.8868,8">长春</option>
+              <option value="126.5358,45.8038,8">哈尔滨</option>
+              <option value="121.6147,38.9140,8">大连</option>
+            </optgroup>
+
+            <optgroup label="华东 · 江浙沪皖">
+              <option value="118.7969,32.0603,8">南京</option>
+              <option value="120.1551,30.2741,8">杭州</option>
+              <option value="117.2272,31.8206,8">合肥</option>
+              <option value="120.5853,31.2989,8">苏州</option>
+              <option value="120.3119,31.4912,8">无锡</option>
+              <option value="119.9740,31.8113,8">常州</option>
+              <option value="120.8567,32.0146,8">南通</option>
+              <option value="117.1844,34.2615,8">徐州</option>
+              <option value="121.5440,29.8683,8">宁波</option>
+              <option value="120.6720,28.0001,8">温州</option>
+              <option value="120.7551,30.7468,8">嘉兴</option>
+              <option value="120.5821,30.0517,8">绍兴</option>
+              <option value="119.6494,29.0894,8">金华</option>
+            </optgroup>
+
+            <optgroup label="华东 · 鲁闽赣">
+              <option value="117.1201,36.6512,8">济南</option>
+              <option value="120.3826,36.0671,8">青岛</option>
+              <option value="121.4480,37.4638,8">烟台</option>
+              <option value="119.2965,26.0745,8">福州</option>
+              <option value="118.0894,24.4798,8">厦门</option>
+              <option value="118.6753,24.8741,8">泉州</option>
+              <option value="115.8581,28.6831,8">南昌</option>
+            </optgroup>
+
+            <optgroup label="华中">
+              <option value="113.6253,34.7466,8">郑州</option>
+              <option value="112.4540,34.6197,8">洛阳</option>
+              <option value="114.3055,30.5928,8">武汉</option>
+              <option value="112.9388,28.2278,8">长沙</option>
+            </optgroup>
+
+            <optgroup label="华南">
+              <option value="113.2644,23.1291,8">广州</option>
+              <option value="114.0579,22.5431,8">深圳</option>
+              <option value="113.1218,23.0218,8">佛山</option>
+              <option value="113.7518,23.0207,8">东莞</option>
+              <option value="113.5524,22.2706,8">珠海</option>
+              <option value="113.3826,22.5212,8">中山</option>
+              <option value="114.4127,23.0795,8">惠州</option>
+              <option value="113.0942,22.5895,8">江门</option>
+              <option value="116.6820,23.3540,8">汕头</option>
+              <option value="110.3594,21.2707,8">湛江</option>
+              <option value="108.3669,22.8170,8">南宁</option>
+              <option value="110.2902,25.2740,8">桂林</option>
+              <option value="109.4282,24.3146,8">柳州</option>
+              <option value="110.3312,20.0311,8">海口</option>
+              <option value="109.5119,18.2528,8">三亚</option>
+            </optgroup>
+
+            <optgroup label="西南">
+              <option value="104.0668,30.5728,8">成都</option>
+              <option value="104.7416,31.4640,8">绵阳</option>
+              <option value="106.6302,26.6477,8">贵阳</option>
+              <option value="106.9272,27.7250,8">遵义</option>
+              <option value="102.8329,24.8801,8">昆明</option>
+              <option value="100.2257,25.5928,8">大理</option>
+              <option value="100.2330,26.8721,8">丽江</option>
+              <option value="91.1322,29.6541,8">拉萨</option>
+            </optgroup>
+
+            <optgroup label="西北">
+              <option value="108.9398,34.3416,8">西安</option>
+              <option value="103.8343,36.0611,8">兰州</option>
+              <option value="101.7782,36.6171,8">西宁</option>
+              <option value="106.2782,38.4664,8">银川</option>
+              <option value="87.6168,43.8256,8">乌鲁木齐</option>
+              <option value="80.2603,41.1683,8">阿克苏</option>
+              <option value="94.6629,40.1421,8">敦煌</option>
+            </optgroup>
+
+            <optgroup label="海外">
+              <option value="139.6917,35.6895,9">东京</option>
+              <option value="126.9780,37.5665,9">首尔</option>
+              <option value="103.8198,1.3521,8">新加坡</option>
+              <option value="100.5018,13.7563,7">曼谷</option>
+              <option value="-0.1276,51.5074,0">伦敦</option>
+              <option value="2.3522,48.8566,1">巴黎</option>
+              <option value="-74.0060,40.7128,-5">纽约</option>
+              <option value="-118.2437,34.0522,-8">洛杉矶</option>
+              <option value="-79.3832,43.6532,-5">多伦多</option>
+              <option value="151.2093,-33.8688,10">悉尼</option>
+            </optgroup>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>其他</legend>
+          <label>性别
+            <select name="gender">
+              <option value="male">男</option>
+              <option value="female">女</option>
+            </select>
+          </label>
+          <label class="check">
+            <input type="checkbox" name="southernMode" />
+            南半球反月模式（实验性，业内有争议）
+          </label>
+        </fieldset>
+
+        <button type="submit">排盘 / 推演</button>
+      </form>
+
+      <div id="diagnostics" class="diagnostics"></div>
+    </aside>
+
+    <section class="panel-chart">
+      <div class="chart-meta" id="chartMeta"></div>
+      <div class="chart-wrap">
+        <svg id="chartSvg" viewBox="0 0 800 460" preserveAspectRatio="xMidYMid meet"></svg>
+        <div id="tooltip" class="tooltip" hidden></div>
+      </div>
+
+      <div class="timeline-section">
+        <div class="timeline-header">
+          <h3>流年 · 大运推演</h3>
+          <div class="timeline-readout" id="timelineReadout">—</div>
+        </div>
+        <div class="year-buttons-wrap" id="yearButtons">
+          <!-- JS 动态生成 0-120 岁流年按钮 -->
+        </div>
+      </div>
+
+      <div class="legend">
+        <span class="dot dot-he"></span>合
+        <span class="dot dot-chong"></span>冲
+        <span class="dot dot-xing"></span>刑
+        <span class="dot dot-hai"></span>害
+        <span class="dot dot-sanhe"></span>三合/三会
+      </div>
+    </section>
+
+    <aside class="panel-detail" id="detailPanel">
+      <h2>命盘解读</h2>
+      <div id="detailContent"><em>请填写命主信息并提交</em></div>
+    </aside>
+  </main>
+
+  <section class="fortune-section" id="fortuneSection" hidden>
+    <div class="fortune-header">
+      <h2>命理分析</h2>
+      <nav class="fortune-tabs">
+        <button class="tab-btn active" data-tab="essence">命局精要</button>
+        <button class="tab-btn" data-tab="personality">性格</button>
+        <button class="tab-btn" data-tab="career">事业</button>
+        <button class="tab-btn" data-tab="marriage">感情</button>
+        <button class="tab-btn" data-tab="wealth">财运</button>
+        <button class="tab-btn" data-tab="health">健康</button>
+        <button class="tab-btn" data-tab="liunian">流年</button>
+      </nav>
+    </div>
+    <div class="fortune-tab-content" id="tabEssence"></div>
+    <div class="fortune-tab-content" id="tabPersonality" hidden></div>
+    <div class="fortune-tab-content" id="tabCareer" hidden></div>
+    <div class="fortune-tab-content" id="tabMarriage" hidden></div>
+    <div class="fortune-tab-content" id="tabWealth" hidden></div>
+    <div class="fortune-tab-content" id="tabHealth" hidden></div>
+    <div class="fortune-tab-content" id="tabLiunian" hidden></div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="disclaimer">
+      ⚠ 本工具基于《子平真诠》《滴天髓》《穷通宝鉴》《渊海子平》《三命通会》等传统命理典籍的规则，
+      仅供传统文化研究、自我认知参考与娱乐之用，不构成任何吉凶预测或人生决策依据。
+      请理性看待，相信科学。
+    </div>
+    <div class="literature">
+      <span>参考典籍：</span>
+      <span title="清·沈孝瞻著，格局论核心">《子平真诠》</span> ·
+      <span title="相传刘伯温撰、任铁樵注，论体用旺衰">《滴天髓》</span> ·
+      <span title="清·余春台辑，调候用神之祖">《穷通宝鉴》</span> ·
+      <span title="宋·徐大升撰，命理体系奠基">《渊海子平》</span> ·
+      <span title="明·万民英撰，命理大全">《三命通会》</span>
+    </div>
+  </footer>
+
+  <!-- 加载顺序很重要：底层依赖在前 -->
+  <script src="js/astro/julian.js"></script>
+  <script src="js/astro/solar-longitude.js"></script>
+  <script src="js/astro/solar-terms.js"></script>
+  <script src="js/astro/solar-time.js"></script>
+  <script src="js/bazi/constants.js"></script>
+  <script src="js/bazi/pillars.js"></script>
+  <script src="js/bazi/shishen.js"></script>
+  <script src="js/bazi/dayun.js"></script>
+  <script src="js/bazi/relations.js"></script>
+  <script src="js/bazi/fortune.js"></script>
+  <script src="js/ui/chart.js"></script>
+  <script src="js/ui/timeline.js"></script>
+  <script src="js/ui/graph.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
