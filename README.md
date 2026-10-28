@@ -50,7 +50,7 @@ python -m http.server 8000
 ## 项目结构
 
 ```
-claude/
+bazi-website/
 ├── index.html
 ├── styles/main.css
 ├── js/
@@ -69,6 +69,8 @@ claude/
 │   │   ├── chart.js               SVG 命盘渲染
 │   │   ├── timeline.js            流年时间轴控制
 │   │   └── graph.js               SVG 关系连线 + 高亮交互
+│   ├── ziwei/                    紫微排盘与解读
+│   ├── qimen/                    奇门盘与分析
 │   └── app.js                     主应用：表单 → 计算 → 渲染
 └── test-node.js                   Node 环境自测脚本
 ```
@@ -95,6 +97,12 @@ node test-node.js
 - **神煞**：仅实现 天乙贵人、桃花、驿马、华盖、文昌 五个常用神煞
 - **南半球反月模式**：实验性功能（业内有争议）。默认关闭
 - **格局**：未做格局判定（杀印相生、伤官配印等），仅基础排盘
+
+本地设置文件不会进入公共仓库；提交前请检查输入的个人命盘数据未保存在源码中。
+
+## 许可
+
+本仓库的原创源码使用 MIT 许可证，见 `LICENSE`。
 
 ## 算法参考
 

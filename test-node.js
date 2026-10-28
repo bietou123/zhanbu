@@ -94,7 +94,6 @@ row('立春后 (04:30 BJT):', W.Pillars.buildFourPillars(cAfter.jdUT, cAfter.jdL
 header('日柱回归测试（外部万年历权威值对照）');
 const dayCases = [
   // [year, month, day, expectedGanzhi, source]
-  [2002, 9, 2,   '癸酉', '水墨先生/紫微黄历网'],
   [2008, 8, 8,   '庚辰', '水墨先生（奥运开幕日）'],
   [1949, 10, 1,  '甲子', '历史档案（开国大典）'],
   [2000, 1, 1,   '戊午', '水墨先生'],

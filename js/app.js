@@ -2,6 +2,7 @@
  *  主应用：把表单 → 计算 → 渲染串起来
  *  - 兼顾"首次提交"与"流年滑动"两条路径
  *  - 自带控制台自测：乌鲁木齐 立春边缘案例
+ *  - 集成紫微斗数、奇门遁甲模块
  * ============================================================ */
 (function (global) {
   'use strict';
@@ -82,6 +83,12 @@
 
     // 关系线绘制
     global.GraphView.drawRelations(svg, rendered.centers, relations);
+
+    // 紫微斗数命盘
+    renderZiweiChart(result);
+
+    // 奇门遁甲时盘
+    renderQimenChart(result);
 
     // 元信息
     renderChartMeta(result, curDayun, liunian, age);
@@ -459,6 +466,373 @@
         <p style="font-size:11px;color:var(--muted)">拖动右侧时间轴可观察任一年龄的流年命局变化</p>
       </div>
     `;
+
+    /* ---------- 紫微斗数 ---------- */
+    renderZiwei(result, ann);
+
+    /* ---------- 奇门遁甲 ---------- */
+    renderQimen(result, ann);
+  }
+
+  /* ---------- 紫微斗数 ---------- */
+  function renderZiwei(result, ann) {
+    const tab = $('tabZiwei');
+    if (!global.ZWStars || !global.ZWAnalysis) {
+      tab.innerHTML = '<div class="fortune-card"><p>紫微斗数模块未加载</p></div>';
+      return;
+    }
+
+    const p = result.pillars;
+    const input = {
+      year: result.input.year,
+      month: result.input.month,
+      day: result.input.day,
+      hour: result.input.hour,
+      yearStem: p.year.stem,
+      yearBranch: p.year.branch,
+      monthBranch: p.month.branch,
+      hourBranch: p.hour.branch,
+      gender: result.input.gender
+    };
+
+    let chart, analysis;
+    try {
+      chart = global.ZWStars.buildChart(input);
+      analysis = global.ZWAnalysis.fullAnalysis(chart);
+    } catch (e) {
+      tab.innerHTML = `<div class="fortune-card"><p>紫微斗数排盘错误：${e.message}</p></div>`;
+      return;
+    }
+
+    // 格局
+    const patternHTML = analysis.patterns.length
+      ? analysis.patterns.map(p => `
+          <div class="stat-bar">
+            <span class="badge" style="background:${({ '上上格':'rgba(76,210,140,0.2)', '上格':'rgba(76,210,140,0.15)', '中上格':'rgba(212,176,106,0.15)', '中格':'rgba(136,136,136,0.15)', '下格':'rgba(255,93,108,0.15)', '特殊格':'rgba(102,176,255,0.15)' })[p.tier] || 'var(--panel-2)'}">${p.tier}</span>
+            <span style="flex:1"><b>${p.name}</b></span>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-left:8px">${p.effect}</p>
+        `).join('')
+      : '<p style="color:var(--muted)">未形成显著格局</p>';
+
+    // 命宫
+    const mingPalace = chart.palaces.ming;
+    const mingStarsHTML = mingPalace.stars.map(s => {
+      const brightness = mingPalace.brightness.find(b => b.star === s)?.brightness || '平';
+      const color = brightness === '庙' ? 'var(--he)' : brightness === '旺' ? 'var(--accent-2)' : brightness === '陷' ? 'var(--chong)' : 'var(--text)';
+      return `<span class="badge" style="color:${color}">${s}${brightness !== '平' ? brightness : ''}</span>`;
+    }).join(' ');
+
+    // 四化
+    const sihua = analysis.sihua;
+    const sihuaHTML = `
+      <div class="kv"><span style="color:var(--he)">化禄</span><span>${sihua.lu.map(s => `${s.star}→${s.palace}`).join('、') || '—'}</span></div>
+      <div class="kv"><span style="color:var(--accent-2)">化权</span><span>${sihua.quan.map(s => `${s.star}→${s.palace}`).join('、') || '—'}</span></div>
+      <div class="kv"><span style="color:#9c9cff">化科</span><span>${sihua.ke.map(s => `${s.star}→${s.palace}`).join('、') || '—'}</span></div>
+      <div class="kv"><span style="color:var(--chong)">化忌</span><span>${sihua.ji.map(s => `${s.star}→${s.palace}`).join('、') || '—'}</span></div>
+    `;
+
+    // 十二宫概览
+    const allPalacesHTML = global.ZWConst.PALACES.map(palace => {
+      const p = chart.palaces[palace.key];
+      const stars = p.stars.slice(0, 3).map(s => {
+        const brightness = p.brightness.find(b => b.star === s)?.brightness || '平';
+        return `${s}${brightness !== '平' ? brightness : ''}`;
+      }).join(' ');
+      return `<div class="kv"><span>${palace.short}(${p.branch})</span><span style="font-size:11px">${stars || '—'}</span></div>`;
+    }).join('');
+
+    // 性格分析
+    const personality = analysis.personality;
+    const personalityHTML = `
+      <h4>性格特质</h4>
+      <div>${personality.traits.map(t => `<span class="badge">${t}</span>`).join('')}</div>
+      <h4 style="color:var(--he)">优势</h4>
+      <p>${personality.strengths.join('、') || '—'}</p>
+      <h4 style="color:var(--chong)">需注意</h4>
+      <p>${personality.weaknesses.join('、') || '—'}</p>
+    `;
+
+    // 事业分析
+    const career = analysis.career;
+    const careerHTML = `
+      <p class="lead">适宜方向：${career.careerDirection.join('、') || '待分析'}</p>
+      <h4>官禄宫星曜</h4>
+      <div>${career.guanluPalace?.stars?.map(s => `<span class="badge">${s}</span>`).join('') || '—'}</div>
+    `;
+
+    // 婚姻分析
+    const marriage = analysis.marriage;
+    const marriageHTML = `
+      <h4>配偶特征</h4>
+      ${marriage.spouseTraits.map(t => `<p>· ${t}</p>`).join('')}
+      <h4>相处建议</h4>
+      ${marriage.marriageAdvice.map(a => `<p>· ${a}</p>`).join('') || '<p>顺其自然</p>'}
+    `;
+
+    tab.innerHTML = `
+      <div class="fortune-card">
+        <h3>命宫 · ${mingPalace.branch}宫 · ${chart.ju}局</h3>
+        <p class="lead">${mingStarsHTML}</p>
+        <p>身宫在${chart.shenPalaceKey ? global.ZWConst.PALACES.find(p => p.key === chart.shenPalaceKey)?.name || chart.shenBranch : chart.shenBranch}</p>
+        <div class="source">来源：《紫微斗数全书》《紫微斗数讲义》</div>
+      </div>
+      <div class="fortune-card">
+        <h3>格局</h3>
+        ${patternHTML}
+      </div>
+      <div class="fortune-card">
+        <h3>四化飞星</h3>
+        ${sihuaHTML}
+        <div class="source">来源：《紫微斗数全书·四化篇》</div>
+      </div>
+      <div class="fortune-card">
+        <h3>十二宫星曜</h3>
+        ${allPalacesHTML}
+      </div>
+      <div class="fortune-card">
+        <h3>性格分析</h3>
+        ${personalityHTML}
+      </div>
+      <div class="fortune-card">
+        <h3>事业方向</h3>
+        ${careerHTML}
+      </div>
+      <div class="fortune-card">
+        <h3>婚姻感情</h3>
+        ${marriageHTML}
+      </div>
+    `;
+  }
+
+  /* ---------- 奇门遁甲 ---------- */
+  function renderQimen(result, ann) {
+    const tab = $('tabQimen');
+    if (!global.QMPlate || !global.QMAnalysis) {
+      tab.innerHTML = '<div class="fortune-card"><p>奇门遁甲模块未加载</p></div>';
+      return;
+    }
+
+    const p = result.pillars;
+    const ctx = result.ctx;
+
+    // 获取当前节气
+    const termName = ctx?.lastJie?.name || '冬至';
+
+    const input = {
+      termName: termName,
+      dayBranch: p.day.branch,
+      hourStem: p.hour.stem,
+      hourBranch: p.hour.branch
+    };
+
+    let plate, analysis;
+    try {
+      plate = global.QMPlate.buildPlate(input);
+      analysis = global.QMAnalysis.fullAnalysis(plate);
+    } catch (e) {
+      tab.innerHTML = `<div class="fortune-card"><p>奇门遁甲排盘错误：${e.message}</p></div>`;
+      return;
+    }
+
+    // 基本信息卡片
+    const infoHTML = `
+      <p class="lead">${plate.dun.name}${plate.ju}局</p>
+      <div class="kv"><span>旬头</span><span>${plate.xuntou}</span></div>
+      <div class="kv"><span>值符</span><span>${plate.zhiFuStar}</span></div>
+      <div class="kv"><span>值使</span><span>${plate.zhiShiGate}</span></div>
+      <div class="source">来源：《奇门遁甲秘笈》《奇门遁甲全书》</div>
+    `;
+
+    // 格局
+    const patternHTML = analysis.patterns.length
+      ? analysis.patterns.map(p => `
+          <div class="stat-bar">
+            <span class="badge" style="background:${({ '上上格':'rgba(76,210,140,0.2)', '上格':'rgba(76,210,140,0.15)', '中格':'rgba(212,176,106,0.15)', '下格':'rgba(255,93,108,0.15)', '吉格':'rgba(76,210,140,0.12)' })[p.tier] || 'var(--panel-2)'}">${p.tier}</span>
+            <span style="flex:1"><b>${p.name}</b></span>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-left:8px">${p.effect}</p>
+        `).join('')
+      : '<p style="color:var(--muted)">未形成显著格局</p>';
+
+    // 九宫图
+    const palaceOrder = ['li', 'kun', 'zhen', 'zhong', 'qian', 'dui', 'gen', 'kan', 'xun'];
+    const palaceDisplay = [
+      ['li', '坤', '离九宫'],
+      ['kun', '坤', '坤二宫'],
+      ['zhen', '震', '震三宫'],
+      ['zhong', '中', '中五宫'],
+      ['qian', '乾', '乾六宫'],
+      ['dui', '兑', '兑七宫'],
+      ['gen', '艮', '艮八宫'],
+      ['kan', '坎', '坎一宫'],
+      ['xun', '巽', '巽四宫']
+    ];
+
+    const jiuGongHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;text-align:center;font-size:11px">
+        ${palaceDisplay.map(([key, name, fullName]) => {
+          const palace = plate.palaces[key];
+          if (!palace) return `<div class="fortune-card" style="padding:8px"><b>${name}</b><br>—</div>`;
+          const isGood = ['开门', '休门', '生门'].includes(palace.gate);
+          const isBad = ['死门', '惊门', '伤门'].includes(palace.gate);
+          const borderClr = isGood ? 'var(--he)' : isBad ? 'var(--chong)' : 'var(--border)';
+          return `
+            <div class="fortune-card" style="padding:8px;border-color:${borderClr}">
+              <b>${name}</b>(${palace.number})
+              <div style="margin:4px 0;font-size:10px;color:var(--muted)">
+                ${palace.heavenStem}/${palace.earthStem}
+              </div>
+              <div style="color:${isGood ? 'var(--he)' : isBad ? 'var(--chong)' : 'var(--text)'}">
+                ${palace.gate}
+              </div>
+              <div style="font-size:10px">${palace.star}</div>
+              <div style="font-size:10px;color:var(--accent)">${palace.god}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    // 有利方位
+    const goodDirHTML = analysis.goodPalaces.length
+      ? analysis.goodPalaces.map(p => `<span class="badge" style="color:var(--he)">${p.direction}(${p.gate})</span>`).join(' ')
+      : '<span style="color:var(--muted)">暂无明确有利方位</span>';
+
+    // 婚姻分析
+    const marriage = analysis.marriage;
+    const marriageHTML = `
+      <p class="lead" style="color:${marriage.overall === '吉' ? 'var(--he)' : marriage.overall === '凶' ? 'var(--chong)' : 'var(--text)'}">
+        感情运势：${marriage.overall}
+      </p>
+      ${marriage.goodPalaces.map(p => `<p style="color:var(--he)">· ${p.meaning}</p>`).join('')}
+      ${marriage.warnings.map(w => `<p style="color:var(--chong)">· ${w}</p>`).join('')}
+      ${marriage.advice.map(a => `<p>· ${a}</p>`).join('')}
+    `;
+
+    // 用事建议
+    const activities = ['求财', '求职', '出行', '开业', '婚嫁'];
+    const activityHTML = activities.map(act => {
+      const actAna = global.QMAnalysis.analyzeActivity(plate, act);
+      if (!actAna) return '';
+      const good = actAna.goodPalaces.map(p => p.direction).join('、') || '无';
+      return `<div class="kv"><span>${act}</span><span style="font-size:11px">宜：${good}</span></div>`;
+    }).join('');
+
+    tab.innerHTML = `
+      <div class="fortune-card">
+        <h3>奇门盘 · ${plate.dun.name}${plate.ju}局</h3>
+        ${infoHTML}
+      </div>
+      <div class="fortune-card">
+        <h3>格局</h3>
+        ${patternHTML}
+      </div>
+      <div class="fortune-card" style="grid-column:span 2">
+        <h3>九宫排盘</h3>
+        ${jiuGongHTML}
+        <p style="font-size:10px;color:var(--muted);margin-top:8px">天盘/地盘 · 八门 · 九星 · 八神</p>
+      </div>
+      <div class="fortune-card">
+        <h3>有利方位</h3>
+        ${goodDirHTML}
+      </div>
+      <div class="fortune-card">
+        <h3>感情婚姻</h3>
+        ${marriageHTML}
+      </div>
+      <div class="fortune-card">
+        <h3>用事建议</h3>
+        ${activityHTML}
+        <div class="source">来源：《奇门遁甲秘笈·用事篇》</div>
+      </div>
+    `;
+  }
+
+  /* ---------- 图表切换 ---------- */
+  let currentChart = 'bazi';
+
+  function switchChart(type) {
+    currentChart = type;
+    const baziWrap = $('chartSvg').parentElement;
+    const zwWrap = $('zwChartWrap');
+    const qmWrap = $('qmChartWrap');
+
+    baziWrap.hidden = type !== 'bazi';
+    zwWrap.hidden = type !== 'ziwei';
+    qmWrap.hidden = type !== 'qimen';
+
+    document.querySelectorAll('.chart-tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.chart === type);
+    });
+  }
+
+  /* ---------- 紫微斗数图表渲染 ---------- */
+  function renderZiweiChart(result) {
+    const svg = $('zwChartSvg');
+    if (!global.ZWChart || !global.ZWStars) {
+      svg.innerHTML = '<text x="360" y="360" text-anchor="middle" fill="#666">模块未加载</text>';
+      return;
+    }
+
+    const p = result.pillars;
+    const input = {
+      year: result.input.year,
+      month: result.input.month,
+      day: result.input.day,
+      hour: result.input.hour,
+      yearStem: p.year.stem,
+      yearBranch: p.year.branch,
+      monthBranch: p.month.branch,
+      hourBranch: p.hour.branch,
+      gender: result.input.gender
+    };
+
+    let chart, analysis;
+    try {
+      chart = global.ZWStars.buildChart(input);
+      analysis = global.ZWAnalysis?.fullAnalysis(chart);
+      state.ziweiChart = chart;
+      state.ziweiAnalysis = analysis;
+    } catch (e) {
+      svg.innerHTML = `<text x="360" y="360" text-anchor="middle" fill="#ff5d6c">排盘错误: ${e.message}</text>`;
+      return;
+    }
+
+    global.ZWChart.render(svg, chart, analysis);
+  }
+
+  /* ---------- 奇门遁甲图表渲染 ---------- */
+  function renderQimenChart(result) {
+    const svg = $('qmChartSvg');
+    if (!global.QMChart || !global.QMPlate) {
+      svg.innerHTML = '<text x="300" y="310" text-anchor="middle" fill="#666">模块未加载</text>';
+      return;
+    }
+
+    const p = result.pillars;
+    const ctx = result.ctx;
+    const termName = ctx?.lastJie?.name || '冬至';
+
+    const input = {
+      termName: termName,
+      dayBranch: p.day.branch,
+      hourStem: p.hour.stem,
+      hourBranch: p.hour.branch
+    };
+
+    let plate, analysis;
+    try {
+      plate = global.QMPlate.buildPlate(input);
+      analysis = global.QMAnalysis?.fullAnalysis(plate);
+      state.qimenPlate = plate;
+      state.qimenAnalysis = analysis;
+    } catch (e) {
+      svg.innerHTML = `<text x="300" y="310" text-anchor="middle" fill="#ff5d6c">排盘错误: ${e.message}</text>`;
+      return;
+    }
+
+    global.QMChart.render(svg, plate, analysis);
   }
 
   /* ---------- 事件绑定 ---------- */
@@ -500,6 +874,13 @@
         document.querySelectorAll('.fortune-tab-content').forEach(c => {
           c.hidden = c.id !== 'tab' + tab[0].toUpperCase() + tab.slice(1);
         });
+      });
+    });
+
+    // 图表切换
+    document.querySelectorAll('.chart-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchChart(btn.dataset.chart);
       });
     });
 

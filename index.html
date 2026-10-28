@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>詹卜 · 八字命理</title>
+  <title>詹卜 · 八字命理 · 紫微斗数 · 奇门遁甲</title>
   <link rel="stylesheet" href="styles/main.css" />
 </head>
 <body>
   <header class="topbar">
     <h1>詹卜</h1>
-    <span class="subtitle">高精度八字排盘 · 真太阳时 · 节气精确到秒 · 流年推演 · 命理分析</span>
+    <span class="subtitle">八字排盘 · 紫微斗数 · 奇门遁甲 · 真太阳时 · 节气精确到秒 · 流年推演 · 命理分析</span>
   </header>
 
   <main class="layout">
@@ -192,6 +192,24 @@
         <div id="tooltip" class="tooltip" hidden></div>
       </div>
 
+      <!-- 紫微斗数命盘 -->
+      <div class="zw-chart-wrap" id="zwChartWrap" hidden>
+        <h3 class="chart-section-title">紫微斗数命盘</h3>
+        <svg id="zwChartSvg" viewBox="0 0 720 720" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <!-- 奇门遁甲盘 -->
+      <div class="qm-chart-wrap" id="qmChartWrap" hidden>
+        <h3 class="chart-section-title">奇门遁甲时盘</h3>
+        <svg id="qmChartSvg" viewBox="0 0 600 620" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="chart-tabs">
+        <button class="chart-tab-btn active" data-chart="bazi">八字</button>
+        <button class="chart-tab-btn" data-chart="ziwei">紫微斗数</button>
+        <button class="chart-tab-btn" data-chart="qimen">奇门遁甲</button>
+      </div>
+
       <div class="timeline-section">
         <div class="timeline-header">
           <h3>流年 · 大运推演</h3>
@@ -228,6 +246,8 @@
         <button class="tab-btn" data-tab="wealth">财运</button>
         <button class="tab-btn" data-tab="health">健康</button>
         <button class="tab-btn" data-tab="liunian">流年</button>
+        <button class="tab-btn" data-tab="ziwei">紫微斗数</button>
+        <button class="tab-btn" data-tab="qimen">奇门遁甲</button>
       </nav>
     </div>
     <div class="fortune-tab-content" id="tabEssence"></div>
@@ -237,6 +257,8 @@
     <div class="fortune-tab-content" id="tabWealth" hidden></div>
     <div class="fortune-tab-content" id="tabHealth" hidden></div>
     <div class="fortune-tab-content" id="tabLiunian" hidden></div>
+    <div class="fortune-tab-content" id="tabZiwei" hidden></div>
+    <div class="fortune-tab-content" id="tabQimen" hidden></div>
   </section>
 
   <footer class="site-footer">
@@ -266,7 +288,18 @@
   <script src="js/bazi/dayun.js"></script>
   <script src="js/bazi/relations.js"></script>
   <script src="js/bazi/fortune.js"></script>
+  <!-- 紫微斗数模块 -->
+  <script src="js/ziwei/constants.js"></script>
+  <script src="js/ziwei/stars.js"></script>
+  <script src="js/ziwei/analysis.js"></script>
+  <!-- 奇门遁甲模块 -->
+  <script src="js/qimen/constants.js"></script>
+  <script src="js/qimen/plate.js"></script>
+  <script src="js/qimen/analysis.js"></script>
+  <!-- UI -->
   <script src="js/ui/chart.js"></script>
+  <script src="js/ui/ziwei-chart.js"></script>
+  <script src="js/ui/qimen-chart.js"></script>
   <script src="js/ui/timeline.js"></script>
   <script src="js/ui/graph.js"></script>
   <script src="js/app.js"></script>
